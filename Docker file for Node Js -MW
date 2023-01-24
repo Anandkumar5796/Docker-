@@ -1,0 +1,24 @@
+# FROM node:lts
+# FROM node:lts-alpine
+FROM node:14.15.1-alpine3.12 as builder
+RUN mkdir -p /var/log/vcpl-middleware && chown -R node:node /var/log/vcpl-middleware
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+# RUN apt-get update && apt-get install python-dev python-pip -y && pip install awscli
+RUN apk update && apk add --no-cache \
+                make \
+                git \
+                py-pip \
+                && pip install awscli
+
+WORKDIR /home/node/app
+COPY package*.json ./
+RUN npm install pm2 -g
+USER node
+RUN mkdir -p /home/node/.vcmw/ && mkdir -p /home/node/.aws
+COPY env-config/credentials /home/node/.aws/
+COPY env-config/oAuthToken.json /home/node/.vcmw/
+RUN npm install
+COPY --chown=node:node . .
+RUN mv env-config/.env . && rm -rf middleware-env-config-sg/ env-config
+EXPOSE 3000
+CMD ["pm2-runtime", "./bin/www"]
