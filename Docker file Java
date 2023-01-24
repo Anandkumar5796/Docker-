@@ -1,0 +1,10 @@
+#Linux with OpenJDK JRE
+FROM amazoncorretto:8-alpine
+#IMAGES WORKING DIR
+WORKDIR /build
+# copy WAR into image
+COPY target/AccountService.jar /build/AccountService.jar
+#Portnumber
+EXPOSE 8080
+# run application with this command line 
+CMD ["java" , "-jar" , "/build/AccountService.jar"]
